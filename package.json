@@ -11,6 +11,7 @@
     "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.32.1",
     "hono": "^4.4.9",
@@ -21,8 +22,8 @@
     "react-dom": "^18"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.6",
     "@types/node": "20.12.12",
+    "@types/pg": "^8.11.6",
     "@types/react": "^18.3.2",
     "drizzle-kit": "^0.24.2",
     "eslint": "8.57.1",
