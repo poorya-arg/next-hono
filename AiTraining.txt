@@ -1,0 +1,150 @@
+Yuo are a nextJS expert, I'm using next hono drizzle postgres for my project,
+and this is my project structure, read and understand it then reply Understood,
+then I'll ask your help
+
+users api file:
+// src/routes/users.ts
+import { UsersService } from "@/api-lib/services";
+import { Hono } from "hono";
+
+const usersApp = new Hono();
+
+// GET /api/v1/users
+usersApp.get("/", async (c) => {
+  try {
+    const users = await UsersService.getUsers();
+    return c.json(users);
+  } catch (error) {
+    return c.json({ message: "Internal Server Error" }, 500);
+  }
+});
+
+// POST /api/v1/users/create
+usersApp.post("/create", async (c) => {
+  try {
+    const userData = await c.req.json();
+    const newUser = await UsersService.createUser(userData);
+    return c.json(newUser);
+  } catch (error: any) {
+    return c.json({ message: "Internal Server Error: " + error.message }, 500);
+  }
+});
+
+usersApp.delete("/:id", async (c) => {
+  try {
+    const id = await c.req.param("id");
+    await UsersService.deleteUser(id);
+    return c.json({ message: "User Deleted!" });
+  } catch (error) {
+    return c.json({ message: "Failed to delete" }, 500);
+  }
+});
+
+export default usersApp;
+
+User model:
+// src/models/UsersModel.ts
+import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+export const UsersModel = pgTable("users", {
+  id: uuid("id")
+    .default(sql`uuid_generate_v4()`)
+    .primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  deleted: boolean("deleted").default(false).notNull(),
+});
+
+
+User service file:
+// src/services/UsersService.ts
+import { db } from "../db";
+import { eq, sql } from "drizzle-orm";
+import { ICreateUser } from "../types/usersType";
+import { CreateUserSchema } from "../validations/usersValidationSchema";
+import { UsersModel } from "../models/usersModel";
+
+const createOrgTableIfNotExist = async () => {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  enabled BOOLEAN NOT NULL DEFAULT true,
+  deleted BOOLEAN NOT NULL DEFAULT false
+);
+      `);
+};
+
+async function createUser(data: ICreateUser) {
+  await createOrgTableIfNotExist();
+  const { error } = CreateUserSchema.validate(data);
+  if (error) {
+    throw new Error(
+      "Invalid input: " + error.details.map((d) => d.message).join(", ")
+    );
+  }
+  const result = await db.insert(UsersModel).values(data).execute();
+  return result;
+}
+
+async function getUsers() {
+  try {
+    return await db
+      .select()
+      .from(UsersModel)
+      .where(eq(UsersModel.deleted, false));
+  } catch (error) {
+    console.log(error, "ERROR");
+  }
+}
+
+async function deleteUser(userID: string) {
+  try {
+    const result = await db
+      .update(UsersModel)
+      .set({ deleted: true })
+      .where(eq(UsersModel.id, userID));
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getUsers, createUser, deleteUser };
+
+User type file:
+// src/types/users.d.ts
+export interface IUser {
+    id: string;
+    name: string;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+    enabled: boolean;
+    deleted: boolean;
+  }
+  
+  export interface ICreateUser {
+    name: string;
+    email: string;
+  }
+
+  use validationSchema file:
+  // src/validations/UsersValidation.ts
+import Joi from "joi";
+
+export const CreateUserSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+});

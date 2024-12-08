@@ -1,2 +1,9 @@
 export * as OrganizationService from "./organizationsService";
 export * as UsersService from "./usersService";
+export * as LabelsService from "./labelsService";
+export * as StatusService from "./statusService";
+export * as TasksService from "./tasksService";
+export * as CommentsService from "./commentsService";
+export * as PermissionsService from "./permissionsService";
+export * as RolesService from "./rolesService";
+export * as RolesPermissionsService from "./rolesPermissionsService";
