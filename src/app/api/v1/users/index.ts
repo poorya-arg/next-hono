@@ -1,5 +1,5 @@
 // src/routes/users.ts
-import { UsersService } from "@/api-lib/services";
+import { UserRolesService, UsersService } from "@/api-lib/services";
 import { Hono } from "hono";
 
 const usersApp = new Hono();
@@ -32,6 +32,26 @@ usersApp.delete("/:id", async (c) => {
     return c.json({ message: "User Deleted!" });
   } catch (error) {
     return c.json({ message: "Failed to delete" }, 500);
+  }
+});
+usersApp.post("/:id/roles", async (c) => {
+  try {
+    const userId = c.req.param("id");
+    const { roleIds } = await c.req.json();
+
+    const assignedRoles = await UserRolesService.assignRolesToUser(
+      userId,
+      roleIds
+    );
+    return c.json(assignedRoles, 201);
+  } catch (error: any) {
+    if (error.isJoi) {
+      return c.json(
+        { message: "Validation Error", details: error.details },
+        400
+      );
+    }
+    return c.json({ message: "Internal Server Error: " + error.message }, 500);
   }
 });
 

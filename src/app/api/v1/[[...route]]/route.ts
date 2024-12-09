@@ -9,6 +9,7 @@ import Tasks from "../tasks/index";
 import Permissions from "../permissions/index";
 import Roles from "../roles/index";
 import RolePermissions from "../role-permissions/index";
+import Login from "../auth/login";
 
 const app = new Hono().basePath("/api/v1");
 
@@ -23,6 +24,7 @@ app.route("/comments", Comments);
 app.route("/permissions", Permissions);
 app.route("/roles", Roles);
 app.route("/role-permissions", RolePermissions);
+app.route("/auth/login", Login);
 
 export const GET = handle(app);
 export const PUT = handle(app);

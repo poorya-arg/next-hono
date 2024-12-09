@@ -1,8 +1,8 @@
 // src/models/UserRolesModel.ts
 import { pgTable, uuid, timestamp } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { RolesModel } from "./RolesModel";
-import { UsersModel } from "./UsersModel";
+import { RolesModel } from "./rolesModel";
+import { UsersModel } from "./usersModel";
 
 export const UserRolesModel = pgTable("user_roles", {
   userId: uuid("user_id")
@@ -20,8 +20,4 @@ export const UserRolesModel = pgTable("user_roles", {
   assignedAt: timestamp("assigned_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-  PRIMARY_KEY: {
-    primary: true,
-    columns: ["user_id", "role_id"],
-  },
 });

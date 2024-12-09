@@ -1,6 +1,6 @@
 // src/services/RolePermissionsService.ts
 import { db } from "../db";
-import { sql, eq, and } from "drizzle-orm";
+import { sql, eq, and, inArray } from "drizzle-orm";
 import { AssignPermissionToRoleSchema } from "../validations/rolesPermissionsValidationSchema";
 import { RolesModel } from "../models/rolesModel";
 import { PermissionsModel } from "../models/permissionsModel";
@@ -100,8 +100,18 @@ async function getPermissionsByRole(roleId: string): Promise<any[]> {
     .execute();
 }
 
+async function getPermissionsByRoles(roleIds: string[]): Promise<any[]> {
+  await createRolePermissionsTableIfNotExist();
+  return await db
+    .select()
+    .from(RolePermissionsModel)
+    .where(inArray(RolePermissionsModel.roleId, roleIds))
+    .execute();
+}
+
 export {
   assignPermissionToRole,
   removePermissionFromRole,
   getPermissionsByRole,
+  getPermissionsByRoles,
 };

@@ -7,3 +7,5 @@ export * as CommentsService from "./commentsService";
 export * as PermissionsService from "./permissionsService";
 export * as RolesService from "./rolesService";
 export * as RolesPermissionsService from "./rolesPermissionsService";
+export * as UserRolesService from "./UserRolesService";
+export * as AuthService from "./authService";
